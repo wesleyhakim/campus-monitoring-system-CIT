@@ -1,0 +1,8 @@
+<div class="gauge-container">
+    <div class="gauge-a"></div>
+    <div class="gauge-b"></div>
+    <div class="gauge-c" style="background-color: {{ color_hex|default:'#5664F9' }}; transform: rotate({{ rotation }}deg);"></div>
+    <div class="gauge-data">
+        <span>{{ value }} {{ unit }}</span>
+    </div>
+</div>

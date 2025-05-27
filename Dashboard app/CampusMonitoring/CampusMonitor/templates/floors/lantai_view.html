@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lantai Dashboard</title>
+    <style>
+        .gauge-container {
+            width: 100px;
+            height: 50px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .gauge-a {
+            z-index: 1;
+            position: absolute;
+            background-color: rgba(255, 255, 255, .2);
+            width: 100%;
+            height: 50px;
+            top: 0;
+            border-radius: 100px 100px 0 0;
+        }
+
+        .gauge-b {
+            z-index: 3;
+            position: absolute;
+            background-color: #222;
+            width: 70px;
+            height: 35px;
+            top: 15px;
+            left: 15px;
+            border-radius: 80px 80px 0 0;
+        }
+
+        .gauge-c {
+            z-index: 2;
+            position: absolute;
+            background-color: #5664F9;
+            width: 100%;
+            height: 50px;
+            top: 50px;
+            border-radius: 0 0 100px 100px;
+            transform-origin: center top;
+            transition: all 1.3s ease-in-out;
+        }
+
+        .gauge-data {
+            z-index: 4;
+            color: #fff;
+            font-size: 0.8em;
+            line-height: 12px;
+            position: absolute;
+            width: 100%;
+            top: 25px;
+            text-align: center;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            padding: 10px;
+            height: calc(100vh - 60px);
+            max-width: 100%;
+            width: 95vw;
+        }
+
+        .header {
+            background-color: #8B0000;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            max-height: calc(100vh - 80px);
+        }
+
+        .admin {
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        .station-block {
+            display: flex;
+            flex-direction: column;
+            background-color: #f5f8ff;
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 250px;
+            transition: all 0.2s ease;
+        }
+
+        .station-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .station-link:hover .station-block {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .station-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .station-title {
+            display: inline-block;
+            align-items: center;
+            font-size: 35px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: visible;
+            text-overflow: unset;
+            max-width: 100%;
+        }
+
+        .last-sent {
+            font-size: 16px;
+        }
+
+        .reading-row {
+            margin: 15px 0;
+            font-size: 20px;
+        }
+
+        .timestamp-info {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+
+        .timestamp-label {
+            font-weight: 500;
+        }
+
+        .timestamp-divider {
+            margin: 0 8px;
+        }
+
+        .gauge-wrapper {
+            margin-top: auto;
+        }
+
+        .right-panel {
+            background-color: #f5f8ff;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #floorImage {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            max-height: 100%;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .floor-image-container {
+            position: relative;
+            flex-grow: 1;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .dot-label {
+            position: absolute;
+            background-color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .dropdown .btn {
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            background-color: #fcaf17;
+            color: black
+        }
+
+        .dropdown-menu {
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: #fcaf17;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .online {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .offline {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .back-button {
+            background-color: #fcaf17;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            color: black;
+            font-weight: bold;
+        }
+
+        .gauge-container {
+            width: 110px;
+            height: 55px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .gauge-a {
+            z-index: 1;
+            position: absolute;
+            background-color: rgb(188, 188, 188);
+            width: 100%;
+            height: 55px;
+            top: 0;
+            border-radius: 100px 100px 0 0;
+        }
+
+        .gauge-b {
+            z-index: 3;
+            position: absolute;
+            background-color: #f5f8ff;
+            width: 80px;
+            height: 40px;
+            top: 15px;
+            left: 15px;
+            border-radius: 80px 80px 0 0;
+        }
+
+        .gauge-c {
+            z-index: 2;
+            position: absolute;
+
+            background-color: {
+                    {
+                    color_hex|default: "#5664F9"
+                }
+            }
+
+            ;
+            width: 100%;
+            height: 55px;
+            top: 55px;
+            border-radius: 0 0 100px 100px;
+            transform-origin: center top;
+            transition: all 1.3s ease-in-out;
+
+            transform: rotate({
+                    {
+                    rotation
+                }
+            }
+
+            deg);
+        }
+
+        .gauge-data {
+            z-index: 4;
+            color: black;
+            font-size: 0.75em;
+            line-height: 12px;
+            position: absolute;
+            width: 100%;
+            top: 40px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 5px;
+            box-sizing: border-box;
+        }
+
+        .gauge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .gauge-item {
+            text-align: center;
+        }
+
+        .gauge-item h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .gauge-range {
+            font-size: 17px;
+            margin-top: 5px;
+        }
+        
+        .right-panel {
+            background-color: #f5f8ff;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: fit-content;
+            max-height: calc(100vh - 80px);
+        }
+
+        .floor-image-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            overflow: hidden;
+        }
+
+        #floorImage {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+    </style>
+
+
+</head>
+
+<body>
+    <div class="header">
+        <a href="{% url 'home' %}" class="back-button">
+            <div class="back-button">← Back</div>
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="floorDropdown" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                {{ current_location.location_name }}
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="floorDropdown">
+                {% for location in all_locations %}
+                <li>
+                    <a class="dropdown-item" href="{% url 'lantai_view' location.id %}">
+                        {{ location.location_name }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="admin">
+            <a href="{% url 'admin:index' %}" class="admin">ADMIN</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="left-container">
+            {% for station in stations %}
+            <a href="{% url 'station_details' location_id=current_location.id station_id=station.id %}"
+                class="station-link">
+                <div class="station-block" id="station-{{ station.id }}" data-station-id="{{ station.id }}">
+
+                    <div class="station-header">
+                        <div class="station-title">
+                            <span
+                                class="status-indicator {% if station.status == 'online' %}online{% else %}offline{% endif %}"></span>
+                            <span class="station-name">{{ station.name }}</span>
+                        </div>
+                    </div>
+                    <div class="last-sent">Last sent {{ station.last_sent_time|date:"n/j/y H:i" }}</div>
+                    <div class="gauge-grid">
+                        {% for reading in station.readings %}
+                        <div class="gauge-item" data-sensor-id="{{ reading.sensor_id }}">
+                            <h3>{{ reading.sensor_name }}</h3>
+                            {% include 'gauge.html' with value=reading.value color_hex=reading.color_hex rotation=reading.rotation unit=reading.unit %}
+                            <p class="gauge-range">{{ reading.status_label }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% for unranged_reading in station.unranged_readings %}
+                    <div class="reading-row" unranged-data-id="{{ unranged_reading.sensor_id }}">
+                        <span class="reading-row-desc">
+                            {{ unranged_reading.description }}
+                        </span><span>:</span>
+                        <span class="reading-row-value">
+                            {{ unranged_reading.value }} {{ unranged_reading.unit }}
+                        </span>
+                        <div class="timestamp-info">
+                            <span class="timestamp-label">Reading from: {{ unranged_reading.start_timestamp|date:"n/j/y H:i:s" }}</span>
+                            <span class="timestamp-divider">-</span>
+                            <span class="timestamp-label">{{ unranged_reading.newest_timestamp|date:"n/j/y H:i:s" }}</span> 
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="right-panel" id="floorPlan">
+            <div class="floor-image-container" style="position: relative;">
+                <img id="floorImage" src="{{ floor_plan_url }}" alt="Floor plan" style="width: 100%; display: block;">
+
+                {% for station in stations %}
+                <div class="dot" style="position: absolute;
+                                width: 10px;
+                                height: 10px;
+                                background-color: red;
+                                border-radius: 50%;
+                                left: {{ station.coordinates.x }}%;
+                                top: {{ station.coordinates.y }}%;
+                                transform: translate(-50%, -50%);
+                                z-index: 2;">
+                </div>
+
+                <div class="dot-label" data-station-id="{{ station.id }}" style="position: absolute;
+                                left: {{ station.coordinates.x }}%;
+
+                                top: {{ station.coordinates.y }}%;
+                                transform: translate(-50%, -150%);
+                                color: black;
+                                font-size: 12px;
+                                white-space: nowrap;
+                                z-index: 3;">
+                    {{ station.name }}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+    <script>
+        function adjustFloorImage() {
+            const container = document.querySelector('.floor-image-container');
+            const img = document.getElementById('floorImage');
+
+            const dots = document.querySelectorAll('.dot');
+            const labels = document.querySelectorAll('.dot-label');
+
+        }
+
+        document.getElementById("floorPlan").addEventListener("click", function (e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            console.log(Clicked at x: ${ Math.round(x) }, y: ${ Math.round(y) });
+        });
+    </script>
+         
+    <script>
+        ;(function(){
+          const locationId = {{ current_location.pk }};
+          const leftContainer = document.querySelector('.left-container');
+          const floorImageContainer = document.querySelector('.floor-image-container');
+        
+          function renderStation(station) {
+            const block = document.getElementById('station-' + station.id);
+            if (!block) return;
+        
+            const nameEl = block.querySelector('.station-name');
+            if (nameEl) nameEl.textContent = station.name;
+        
+            const dotIndicator = block.querySelector('.status-indicator');
+            dotIndicator.className = 'status-indicator ' + (station.status === 'online' ? 'online' : 'offline');
+        
+            block.querySelector('.last-sent')
+                 .textContent = 'Last sent ' + new Date(station.last_sent_time).toLocaleString();
+        
+            block.querySelectorAll('.gauge-item').forEach(item => {
+                const sensorId = item.dataset.sensorId;
+                const reading = station.readings.find(r => r.sensor_id == sensorId);
+
+                if (!reading) return;
+
+                item.querySelector('h3').textContent = reading.sensor_name;
+
+                const needle = item.querySelector('.gauge-c');
+                needle.style.transform = `rotate(${reading.rotation}deg)`;
+                needle.style.backgroundColor = reading.color_hex;
+
+                item.querySelector('.gauge-data').textContent = `${reading.value} ${reading.unit}`;
+                item.querySelector('.gauge-range').textContent = reading.status_label;
+            });
+
+            block.querySelectorAll('.reading-row').forEach(row => {
+                const sensorId = row.getAttribute('unranged-data-id');
+                const ur = station.unranged_readings.find(u => u.sensor_id == sensorId);
+                if (!ur) return;
+
+                row.querySelector('.reading-row-desc').textContent = ur.description;
+
+                row.querySelector('.reading-row-value')
+                    .textContent = `${ur.value} ${ur.unit}`;
+                const stamps = row.querySelectorAll('.timestamp-label');
+                stamps[0].textContent = new Date(ur.start_timestamp).toLocaleString();
+                stamps[1].textContent = new Date(ur.newest_timestamp).toLocaleString();
+            });
+
+            const dotLabel = floorImageContainer.querySelector(`.dot-label[data-station-id="${station.id}"]`);
+            if (dotLabel) dotLabel.textContent = station.name;
+          }
+        
+          function addStation(station) {
+            
+            const link = document.createElement('a');
+            link.className = 'station-link';
+            link.href = `{% url 'station_details' location_id=current_location.id station_id=0 %}`.replace('/0/', `/${station.id}/`);
+            const block = document.createElement('div');
+            block.className = 'station-block';
+            block.id = 'station-' + station.id;
+            block.dataset.stationId = station.id;
+        
+            const hdr = document.createElement('div'); hdr.className = 'station-header';
+            const title = document.createElement('div'); title.className = 'station-title';
+            const sdot  = document.createElement('span');
+            sdot.className = 'status-indicator ' + (station.status==='online'?'online':'offline');
+            const sname = document.createElement('span');
+            sname.className = 'station-name';
+            sname.textContent = station.name;
+            title.append(sdot, sname);
+            hdr.append(title);
+        
+            const last = document.createElement('div');
+            last.className = 'last-sent';
+            last.textContent = 'Last sent ' + new Date(station.last_sent_time).toLocaleString();
+        
+            const gg = document.createElement('div');
+            gg.className = 'gauge-grid';
+            station.readings.forEach(r => {
+              const gi = document.createElement('div');
+              gi.className = 'gauge-item';
+              gi.innerHTML = `
+                <h3>${r.sensor_name}</h3>
+                <div class="gauge-container">
+                  <div class="gauge-a"></div>
+                  <div class="gauge-b"></div>
+                  <div class="gauge-c" style="transform:rotate(${r.rotation}deg); background-color:${r.color_hex};"></div>
+                  <div class="gauge-data">${r.value} ${r.unit}</div>
+                </div>
+                <p class="gauge-range">${r.status_label}</p>
+              `;
+              gg.append(gi);
+            });
+        
+            station.unranged_readings.forEach(u => {
+              const ur = document.createElement('div');
+              ur.className = 'reading-row';
+              ur.dataset.desc = u.description;
+              ur.innerHTML = `
+                <span class="reading-row-desc">${u.description}</span>: 
+                <span class="reading-row-value">${u.value} ${u.unit}</span>
+                <div class="timestamp-info">
+                  <span class="timestamp-label">${new Date(u.start_timestamp).toLocaleString()}</span>
+                  <span class="timestamp-divider">-</span>
+                  <span class="timestamp-label">${new Date(u.newest_timestamp).toLocaleString()}</span>
+                </div>
+              `;
+              block.append(ur);
+            });
+        
+            block.prepend(gg);
+            block.prepend(last);
+            block.prepend(hdr);
+            link.append(block);
+            leftContainer.append(link);
+        
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            dot.dataset.stationId = station.id;
+            dot.style.cssText = `
+              position:absolute; width:10px; height:10px; background:red;
+              border-radius:50%; left:${station.coordinates.x}%;
+              top:${station.coordinates.y}%; transform:translate(-50%,-50%);
+              z-index:2;
+            `;
+            const label = document.createElement('div');
+            label.className = 'dot-label';
+            label.dataset.stationId = station.id;
+            label.textContent = station.name;
+            label.style.cssText = `
+              position:absolute; padding:2px 6px; background:#fff;
+              border-radius:4px; font-size:12px;
+              left:${station.coordinates.x}%;
+              top:${station.coordinates.y}%;
+              transform:translate(-50%,-150%);
+              z-index:3;
+            `;
+            floorImageContainer.append(dot, label);
+            console.log("masuk addstation");
+          }
+        
+          function removeStation(id) {
+            console.log("masuk removestation");
+            const card = document.getElementById('station-' + id);
+            if (card) card.closest('a.station-link').remove();
+            const dot   = floorImageContainer.querySelector(`.dot[data-station-id="${id}"]`);
+            const label = floorImageContainer.querySelector(`.dot-label[data-station-id="${id}"]`);
+            if (dot)   dot.remove();
+            if (label) label.remove();
+          }
+        
+          function refreshData(){
+            fetch(`/lantai/${locationId}/`, {
+              headers: {'X-Requested-With':'XMLHttpRequest'}
+            })
+            .then(res => res.json())
+            .then(({ stations, floor_plan_url }) => {
+              document.getElementById('floorImage').src = floor_plan_url;
+        
+              const existing = Array.from(document.querySelectorAll('.station-block'))
+                                   .map(b => b.dataset.stationId);
+              const incoming = stations.map(s => String(s.id));
+        
+              stations.forEach(s => {
+                if (existing.includes(String(s.id))) renderStation(s);
+                else addStation(s);
+              });
+        
+              const toRemove = existing.filter(id => !incoming.includes(id));
+              if (toRemove.length) console.log('🗑 Removing stations:', toRemove);
+              toRemove.forEach(id => removeStation(id));
+            })
+            .catch(console.error);
+          }
+        
+          refreshData();
+          setInterval(refreshData, 1000);
+        })();
+        </script>
+        
+
+
+</body>
+
+</html>

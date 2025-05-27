@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Monitoring</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            background-color: #8B0000;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .title {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin {
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        .system-overview {
+            background-color: #E6E6FA;
+            color: black;
+            text-align: center;
+            padding: 1rem;
+            margin: 2rem auto;
+            width: 80%;
+            max-width: 300px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .floor-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        .floor-card {
+            background-color: #FFA500;
+            padding: 2rem;
+            border-radius: 8px;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .status {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #32CD32;
+            border-radius: 50%;
+        }
+
+        .floor-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .floor-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo"></div>
+        <div class="title">
+            <h1>CAMPUS MONITORING</h1>
+            <div>MARTIN WESLEY</div>
+        </div>
+        <div class="admin">
+            <a href="{% url 'admin:index' %}" class="admin">ADMIN</a>
+        </div>
+    </header>
+
+    <a href="{% url 'system_overview' %}" class="system-overview">
+        <h2>SYSTEM OVERVIEW</h2>
+    </a>
+
+    <div class="floor-container">
+        {% for location in locations %}
+        <a href="{% url 'lantai_view' location.location_id %}" class="floor-card-link">
+            <div class="floor-card" data-location-id="{{ location.location_id }}">
+                <h3 class="floor-title">{{ location.name }}</h3>
+                <div class="status">
+                    <div class="status-dot" style="background-color:
+                 {% if location.online_stations == 0 %}red{% else %}#32CD32{% endif %};">
+                    </div>
+                    <span>{{ location.online_stations }}/{{ location.total_stations }} Stations online</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+
+    </div>
+
+    <script>
+        ;(function(){
+          const url = "{% url 'home' %}";
+          const container = document.querySelector('.floor-container');
+        
+          function renderLocation(loc) {
+            const card = document.querySelector(`.floor-card[data-location-id="${loc.location_id}"]`);
+            if (!card) return;
+            const dot = card.querySelector('.status-dot');
+            dot.style.backgroundColor = loc.online_stations === 0 ? 'red' : '#32CD32';
+            card.querySelector('.status span')
+                .textContent = `${loc.online_stations}/${loc.total_stations} Stations online`;
+          }
+        
+          function addLocationCard(loc) {
+            const link = document.createElement('a');
+            link.className = 'floor-card-link';
+            link.href = `/lantai/${loc.location_id}/`;
+        
+            const card = document.createElement('div');
+            card.className = 'floor-card';
+            card.dataset.locationId = loc.location_id;
+        
+            const title = document.createElement('h3');
+            title.className = 'floor-title';
+            title.textContent = loc.name;
+        
+            const status = document.createElement('div');
+            status.className = 'status';
+        
+            const dot = document.createElement('div');
+            dot.className = 'status-dot';
+            dot.style.backgroundColor = loc.online_stations === 0 ? 'red' : '#32CD32';
+        
+            const span = document.createElement('span');
+            span.textContent = `${loc.online_stations}/${loc.total_stations} Stations online`;
+        
+            status.append(dot, span);
+            card.append(title, status);
+            link.append(card);
+            container.append(link);
+          }
+        
+          async function refreshData(){
+            try {
+              const res = await fetch(url, { headers: {'X-Requested-With':'XMLHttpRequest'} });
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              const data = await res.json();
+        
+              const seen = new Set();
+        
+              data.locations.forEach(loc => {
+                seen.add(String(loc.location_id));
+                const exists = document.querySelector(
+                  `.floor-card[data-location-id="${loc.location_id}"]`
+                );
+                if (exists) {
+                  renderLocation(loc);
+                } else {
+                  addLocationCard(loc);
+                }
+              });
+        
+              document.querySelectorAll('.floor-card').forEach(card => {
+                if (!seen.has(card.dataset.locationId)) {
+                  const link = card.closest('a.floor-card-link');
+                  link && link.remove();
+                }
+              });
+            } catch(err) {
+              console.error('Failed to refresh locations:', err);
+            }
+          }
+        
+          refreshData();
+          setInterval(refreshData, 1000);
+        })();
+        </script>       
+
+</body>
+
+</html>

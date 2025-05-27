@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Monitoring System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        
+        .header {
+            background-color: #8B0000;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 33x;
+            margin: 0;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .title {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .admin {
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .user-name {
+            font-size: 14px;
+            text-align: center;
+        }
+    
+        .back-button {
+            background-color: #E6E6FA;
+            color: black;
+            text-align: center;
+            padding: 1rem;
+            margin: 2rem auto;
+            width: 80%;
+            max-width: 200px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: block;
+
+            font-size: 1.5em;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        
+        .content a {
+            text-decoration: none;
+        }
+
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 10px;
+            background-color: #fff;
+            gap: 10px;
+        }
+        
+        .floor {
+            background-color: #dce0e6;
+            padding: 10px;
+            flex: calc(25% - 10px);
+            box-sizing: border-box;
+            min-width: 200px;
+            margin: 0 5px;
+        }
+        
+        .floor-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .station {
+            margin-bottom: 15px;
+        }
+        
+        .station-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .parameter {
+            margin-left: 0;
+            line-height: 1.4;
+        }
+
+        .back-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .back-button-container {
+            background-color: #fff;
+            padding: 1px;
+        }
+
+        .highlight-update {
+            animation: highlight 2s;
+        }
+
+        @keyframes highlight {
+            0% { background-color: #ffff99; }
+            100% { background-color: transparent; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo"></div>
+        <div class="title">
+            <h1>CAMPUS MONITORING</h1>
+            <div>MARTIN WESLEY</div>
+        </div>
+        <div class="admin">
+            <a href="{% url 'admin:index' %}" class="admin">ADMIN</a>
+        </div>
+    </header>
+    
+    <div class="back-button-container">
+        <a href="{% url 'home' %}" class="back-button">
+                HOME
+        </a>
+    </div>
+    
+    <div class="content">
+        
+        {% for location in locations %}
+        <div class="floor" data-floor="{{ location.name|slugify }}">
+            <div class="floor-title">{{ location.name }}</div>
+
+            {% for station in location.stations %}
+            <div class="station"
+                data-floor="{{ location.name|slugify }}"
+                data-station="{{ station.name|slugify }}"
+                data-id="{{ station.id}}">
+
+                <div class="station-title">
+                    <span class="station-name">{{ station.name }}</span>
+                    &nbsp;–&nbsp;
+                    <span class="station-status">{{ station.status }}</span>
+                </div>
+
+                <div class="station-meta">
+                    Last&nbsp;sent:
+                    <span class="station-last">{{ station.last_sent|date:"n/j/y H:i:s" }}</span>
+                </div>
+
+                <div class="station-readings">
+                    {% for sensor in station.sensors %}
+                    <div class="parameter"
+                        data-sensor="{{ sensor.sensor_id }}">
+                        <span class="param-name">{{ sensor.name }}</span>
+                        <span class="param-value">
+                        {{ sensor.value }}{% if sensor.unit %}&nbsp;{{ sensor.unit }}{% endif %}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    
+    <script>
+
+        function slugify(str){
+            return str.toLowerCase()
+                        .replace(/[^a-z0-9]+/g,'-')
+                        .replace(/^-+|-+$/g,'');
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return "N/A";
+            
+            const date = new Date(dateString);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const year = date.getFullYear().toString().slice(-2);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const seconds = date.getSeconds().toString().padStart(2, '0');
+            
+            return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+        }
+        
+        function updateDashboard() {
+            $.ajax({
+                url: window.location.href,
+                type: 'GET',
+                dataType: 'json',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                success: function(data) {
+                    data.locations.forEach(function(location) {
+                        const locationElement = $(`.floor[data-floor="${location.name.toLowerCase().replace(/\s+/g, '-')}"]`);
+                        
+                        location.stations.forEach(function(station) {
+                            const stationElement = locationElement.find(`.station[data-id="${station.id}"]`);
+                            stationElement.find('.station-name').text(station.name);
+                            
+                            const statusElement = stationElement.find('.station-status');
+                            if (statusElement.text() !== station.status) {
+                                statusElement.text(station.status);
+                                statusElement.addClass('highlight-update');
+                                setTimeout(() => statusElement.removeClass('highlight-update'), 2000);
+                            }
+                            
+                            const lastSentElement = stationElement.find('.station-last');
+                            const formattedDate = formatDateTime(station.last_sent);
+                            if (lastSentElement.text() !== formattedDate) {
+                                lastSentElement.text(formattedDate);
+                                lastSentElement.addClass('highlight-update');
+                                setTimeout(() => lastSentElement.removeClass('highlight-update'), 2000);
+                            }
+                            
+                            station.sensors.forEach(function(sensor) {
+                               const paramElement = stationElement.find(`.parameter[data-sensor="${sensor.sensor_id}"]`);
+                                paramElement.find('.param-name').text(sensor.name);
+
+                                if (paramElement.length) {
+                                    const valueElement = paramElement.find('.param-value');
+                                    const currentText = valueElement.text().trim();
+                                    const newText = sensor.value + (sensor.unit ? ' ' + sensor.unit : '');
+                                    
+                                    if (currentText !== newText) {
+                                        valueElement.text(newText);
+                                        valueElement.addClass('highlight-update');
+                                        setTimeout(() => valueElement.removeClass('highlight-update'), 2000);
+                                    }
+                                }
+                            });
+                        });
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            setInterval(updateDashboard, 1000);
+        });
+    </script>
+</body>
+</html>

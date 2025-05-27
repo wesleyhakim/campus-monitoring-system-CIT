@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Monitoring</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            background-color: #8B0000;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .title {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .admin {
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: white;
+        }
+
+        .back-button {
+            background-color: #7EB6FF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+
+        .station-title {
+            font-size: 24px;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-arrow {
+            color: #555;
+            margin-left: 10px;
+        }
+
+        .content {
+            display: flex;
+            padding: 10px;
+            gap: 15px;
+        }
+
+        .charts-container {
+            flex: 4;
+            background-color: #E6E6E6;
+            padding: 20px;
+            border-radius: 5px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 20px;
+        }
+
+        .readings-container {
+            flex: 1;
+            background-color: #E6E6E6;
+            padding: 15px;
+            border-radius: 5px;
+            max-width: 200px;
+        }
+
+        .chart-section {
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .chart-container {
+            height: 200px;
+        }
+
+        .sensor-reading {
+            background-color: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            font-size: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .sensor-reading:last-child {
+            margin-bottom: 0;
+        }
+
+        .sensor-value {
+            font-weight: bold;
+        }
+
+        .no-data-message {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #777;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo"></div>
+        <div class="title">
+            <h1>CAMPUS MONITORING</h1>
+            <div>MARTIN WESLEY</div>
+        </div>
+        <div class="admin">
+            <a href="{% url 'admin:index' %}" class="admin">ADMIN</a>
+        </div>
+    </header>
+
+    <a href="{% url 'lantai_view' current_location.id %}" class="back-button">←</a>
+
+    <div class="station-title">
+        {{ station.name }}
+    </div>
+
+
+    <div class="content">
+        <div class="charts-container">
+            {% for sensor_id, data in chart_data.items %}
+            <div class="chart-section">
+                <div class="chart-title">
+                    {{ data.name }}{% if data.unit %} ({{ data.unit }}){% endif %}
+                </div>
+                <div class="chart-container">
+                    <canvas
+                        id="canvas_{{ sensor_id }}"
+                        data-slug="{{ sensor_id }}"></canvas>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="readings-container">
+            {% for sensor in station.sensors %}
+            <div class="sensor-reading" data-id="{{ sensor.sensor_id }}">
+                {{ sensor.name }}:
+                <span class="sensor-value">
+                    {{ sensor.value }}{% if sensor.unit %} {{ sensor.unit }}{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        const chartData = {{ chart_data_json|safe }};
+    
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 156) + 100;
+            const g = Math.floor(Math.random() * 156) + 100;
+            const b = Math.floor(Math.random() * 156) + 100;
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+    
+        document.addEventListener('DOMContentLoaded', function () {
+            for (const [sensorSlug, data] of Object.entries(chartData)) {
+                const hasValidData = Array.isArray(data.values) && data.values.some(val => val !== null);
+                if (hasValidData) {
+                    initializeChart(sensorSlug, data);
+                } else {
+                    showNoDataMessage(sensorSlug);
+                }
+            }
+        });
+    
+        function initializeChart(sensorSlug, data) {
+            const canvas = document.getElementById('canvas_' + sensorSlug);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const color = getRandomColor();
+    
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.timestamps,
+                    datasets: [{
+                        label: data.name || sensorSlug,
+                        data: data.values,
+                        borderColor: color,
+                        backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
+                        tension: 0.1,
+                        borderWidth: 1.5,
+                        pointRadius: 1.5,
+                        pointHoverRadius: 2
+
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true }
+                    },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: {}
+                    }
+                }
+            });
+            canvas.chart = chart
+        }
+    
+        function showNoDataMessage(sensorSlug) {
+            const canvasEl = document.getElementById('canvas_' + sensorSlug);
+            const container = canvasEl?.parentNode;
+            if (canvasEl) canvasEl.remove();
+    
+            const message = document.createElement('div');
+            message.className = 'no-data-message';
+            message.textContent = 'No Data Available';
+            container?.appendChild(message);
+        }
+    </script>
+    
+    <script>
+        const refreshMs   = 1000;
+        const detailUrl   = window.location.href;
+        const charts      = {};
+        const randomRGBA  = _ => {
+            const r = Math.floor(Math.random()*156)+100;
+            const g = Math.floor(Math.random()*156)+100;
+            const b = Math.floor(Math.random()*156)+100;
+            return [`rgb(${r},${g},${b})`, `rgba(${r},${g},${b},0.1)`];
+        };
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            buildCharts(chartData);
+            setInterval(fetchLatest, refreshMs);
+        });
+        
+        async function fetchLatest(){
+            try{
+                const resp = await fetch(detailUrl, { headers:{'X-Requested-With':'XMLHttpRequest'}});
+                if(!resp.ok) throw new Error(resp.statusText);
+                const data = await resp.json();
+                updateReadings(data.station.sensors);
+                updateCharts(data.chart_data_json);
+                document.querySelector('.station-title').textContent = data.station.name;
+            }catch(err){ console.error('AJAX error:', err); }
+        }
+        
+        function updateReadings(sensors){
+            sensors.forEach(s => {
+                const el = document.querySelector(`.sensor-reading[data-id="${s.sensor_id}"]`);
+                if(el){
+                    el.childNodes[0].nodeValue = `${s.name}: `;
+                    const span = el.querySelector('.sensor-value');
+                    span.textContent = `${s.value} ${s.unit ?? ''}`.trim();
+                }
+            });
+        }
+
+        function buildCharts(chartDict){
+            for(const [slug, d] of Object.entries(chartDict)){
+                if(!charts[slug]) createChart(slug, d);
+                else   replaceData(slug, d);
+            }
+        }
+        
+        function createChart(slug, d){
+            let canvas = document.getElementById('canvas_'+slug);
+
+            if (!canvas){
+                const chartsGrid = document.querySelector('.charts-container');
+                if(!chartsGrid){ console.warn('no .charts-container found'); return; }
+
+                const section = document.createElement('div');
+                section.className = 'chart-section';
+                section.innerHTML = `
+                    <div class="chart-title">
+                        ${d.name}${d.unit ? ` (${d.unit})` : ''}
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="canvas_${slug}" data-slug="${slug}"></canvas>
+                    </div>`;
+                chartsGrid.appendChild(section);
+
+                canvas = section.querySelector('canvas');
+            }
+
+            const [stroke, fill] = randomRGBA();
+            charts[slug] = new Chart(canvas.getContext('2d'), {
+                type:'line',
+                data:{
+                    labels:[...d.timestamps],
+                    datasets:[{
+                        label: d.name,
+                        data:[...d.values],
+                        borderColor: stroke,
+                        backgroundColor: fill,
+                        tension:.1,
+                        borderWidth: 1.5,
+                        pointRadius: 1.5,
+                        pointHoverRadius: 2
+
+                    }]
+                },
+                options:{
+                    responsive:true, maintainAspectRatio:false,
+                    plugins:{ legend:{display:false} },
+                    scales:{ y:{beginAtZero:true} }
+                }
+            });
+        }
+
+        
+        function replaceData(slug, d) {
+            const ch = charts[slug];
+            if (!ch) return;
+
+            ch.data.labels = [...d.timestamps];
+            ch.data.datasets[0].data = [...d.values];
+            ch.data.datasets[0].label = d.name;
+            ch.update();
+
+            const chartTitle = document.querySelector(`#canvas_${slug}`)
+                ?.closest('.chart-section')
+                ?.querySelector('.chart-title');
+            if (chartTitle) {
+                chartTitle.textContent = `${d.name}${d.unit ? ` (${d.unit})` : ''}`;
+            }
+        }
+        
+        function updateCharts(latestDict){
+            for (const [slug,fresh] of Object.entries(latestDict)){
+                if (!charts[slug]) {
+                    createChart(slug, fresh);
+                } else {
+                    replaceData(slug, fresh);
+                }
+            }
+        }
+
+        </script>
+        
+</body>
+</html>
