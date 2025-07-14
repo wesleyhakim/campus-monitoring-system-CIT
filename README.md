@@ -1,3 +1,5 @@
+<h2> Campus Monitoring System Capstone Project </h2>
+
 Repository github ini adalah repository lampiran kode dari Tugas Akhir Calvin Institute of Technology dengan judul "PERANCANGAN SISTEM MONITORING KAMPUS TERPUSAT BERBASIS IOT" yang dikerjakan oleh Martin Emmanuel Chang (212100199) dan Wesley Hakim (212100211) dengan dosen pembimbing pertama Erwin Anggadjaja, Ph.D dan dosen pembimbing kedua Aditya Heru Prathama, Ph.D.
 
 Berikut panduan  program dan sistem secara ringkas:
