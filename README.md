@@ -70,6 +70,6 @@ Proyek ini berupaya membuat sebuah sistem monitoring kampus terpusas berbasis Io
 Project ini menggunakan bahasa pemrograman Python, library Django, dan paho-mqtt untuk membuat web dashboard dan menerima data. Juga digunakan bahasa pemrograman berbasis C++ dengan Arduino IDE untuk membaca serta mengirim data dari mikrokontroler station.
 
 ## Reference
-Untuk melihat dokumen prosedur penggunaan sistem dapat dilihat selengkapnya pada Dokumen Tugas Akhir PERANCANGAN SISTEM MONITORING KAMPUS TERPUSAT BERBASIS IOT yang tersedia pada kampus Calvin Institute of Technology.
-[🏛️ Situs kampus](https://calvin.ac.id/)
-[📍 Lokasi](https://maps.app.goo.gl/DjaNVvmcPE8rgyDR9)
+Untuk melihat dokumen prosedur penggunaan sistem dapat dilihat selengkapnya pada Dokumen Tugas Akhir PERANCANGAN SISTEM MONITORING KAMPUS TERPUSAT BERBASIS IOT yang tersedia pada kampus Calvin Institute of Technology.  
+[🏛️ Situs kampus](https://calvin.ac.id/)  
+[📍 Lokasi](https://maps.app.goo.gl/DjaNVvmcPE8rgyDR9)  
