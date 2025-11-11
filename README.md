@@ -53,7 +53,7 @@
     File txt yang berisi mengenai library python yang perlu diinstal untuk aplikasi dapat berjalan.
 
 ## Deskripsi proyek
-Repository github ini adalah repository lampiran kode dari Tugas Akhir Calvin Institute of Technology dengan judul "PERANCANGAN SISTEM MONITORING KAMPUS TERPUSAT BERBASIS IOT" yang dikerjakan oleh Martin Emmanuel Chang (212100199) dan Wesley Hakim (212100211) dengan dosen pembimbing pertama Erwin Anggadjaja, Ph.D dan dosen pembimbing kedua Aditya Heru Prathama, Ph.D.
+Repository github ini adalah repository lampiran kode dari Tugas Akhir Calvin Institute of Technology dengan judul `"PERANCANGAN SISTEM MONITORING KAMPUS TERPUSAT BERBASIS IOT"` yang dikerjakan oleh `Martin Emmanuel Chang (212100199)` dan `Wesley Hakim (212100211)` dengan dosen pembimbing pertama Erwin Anggadjaja, Ph.D dan dosen pembimbing kedua Aditya Heru Prathama, Ph.D.
 
 Proyek ini berupaya membuat sebuah sistem monitoring kampus terpusas berbasis IoT dengan station sebagai node yang bertindak untuk mengambil data lingkungan menggunakan berabgai sensor, kemudian mengirim data bacaan sensor tersebut kepada server Raspberry Pi untuk disimpan datanya dan ditampilkan pada web dashboard. Pengiriman data dilakukan menggunakan MQTT dan web dashboard menggunakan web framework Django yang dijalankan pada Raspberry Pi juga.
 
@@ -68,6 +68,13 @@ Proyek ini berupaya membuat sebuah sistem monitoring kampus terpusas berbasis Io
 
 ## Stacks
 Project ini menggunakan bahasa pemrograman Python, library Django, dan paho-mqtt untuk membuat web dashboard dan menerima data. Juga digunakan bahasa pemrograman berbasis C++ dengan Arduino IDE untuk membaca serta mengirim data dari mikrokontroler station.
+
+## Kontributor
+
+| Nama       | LinkedIn | GitHub |
+|------------|----------|--------|
+| Martin Emmanuel Chang | [🔗 Connect](https://www.linkedin.com/in/martin-emmanuel-chang-666b1529a/) | [✅ Follow](https://github.com/mmmmartin24) |
+| Wesley Hakim | [🔗 Connect](https://www.linkedin.com/in/wesley-hakim/) | [✅ Follow](https://github.com/wesleyhakim) |
 
 ## Reference
 Untuk melihat dokumen prosedur penggunaan sistem dapat dilihat selengkapnya pada Dokumen Tugas Akhir PERANCANGAN SISTEM MONITORING KAMPUS TERPUSAT BERBASIS IOT yang tersedia pada kampus Calvin Institute of Technology.  
