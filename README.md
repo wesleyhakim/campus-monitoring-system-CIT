@@ -58,13 +58,13 @@ Repository github ini adalah repository lampiran kode dari Tugas Akhir Calvin In
 Proyek ini berupaya membuat sebuah sistem monitoring kampus terpusas berbasis IoT dengan station sebagai node yang bertindak untuk mengambil data lingkungan menggunakan berabgai sensor, kemudian mengirim data bacaan sensor tersebut kepada server Raspberry Pi untuk disimpan datanya dan ditampilkan pada web dashboard. Pengiriman data dilakukan menggunakan MQTT dan web dashboard menggunakan web framework Django yang dijalankan pada Raspberry Pi juga.
 
 ## Prosedur
-  **Untuk menjalankan dashboard:**
-    1. Jalankan environment python dengan library yang tertulis pada requirements.txt
-    2. Jalankan program python manage.py mqtt_listener pada folder CampusMonitoring dalam folder Dashboard app. Program ini untuk menjalankan klien MQTT yang menerima data
+  **Untuk menjalankan dashboard:**  
+    1. Jalankan environment python dengan library yang tertulis pada requirements.txt  
+    2. Jalankan program python manage.py mqtt_listener pada folder CampusMonitoring dalam folder Dashboard app. Program ini untuk menjalankan klien MQTT yang menerima data  
 
-  **Untuk menjalankan station:**
-    1. Upload kode station kepada mikrokontroler
-    2. Pasang catu daya station setelah mqtt_listener telah dijalankan
+  **Untuk menjalankan station:**  
+    1. Upload kode station kepada mikrokontroler  
+    2. Pasang catu daya station setelah mqtt_listener telah dijalankan  
 
 ## Stacks
 Project ini menggunakan bahasa pemrograman Python, library Django, dan paho-mqtt untuk membuat web dashboard dan menerima data. Juga digunakan bahasa pemrograman berbasis C++ dengan Arduino IDE untuk membaca serta mengirim data dari mikrokontroler station.
